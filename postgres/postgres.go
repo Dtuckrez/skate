@@ -6,10 +6,12 @@ import (
 	"log"
 )
 
-func open() *sql.DB {
-	// 	"password=%s dbname=%s sslmode=disable",
-	// 	host, port, user, password, dbname)
+type board struct {
+	manufacture string
+}
 
+// Opens a connection to the postgres DB using some simple values
+func openDBconnection() *sql.DB {
 	db, err := sql.Open("postgres", "postgres://postgres:password@skate-postgres:5432/skate?sslmode=disable")
 	if err != nil {
 		log.Println(err)
@@ -21,9 +23,10 @@ func open() *sql.DB {
 	return db
 }
 
+// calls a Select SQL query to fetch boards from Postgres
 func GetBoards() {
 
-	var db = open()
+	var db = openDBconnection()
 	err := db.Ping()
 	if err != nil {
 		log.Println(err)
@@ -31,20 +34,22 @@ func GetBoards() {
 		log.Println("Ping okay")
 	}
 
-	rows, err := db.Query(`SELECT * FROM "boards"`)
+	rows, err := db.Query(`SELECT manufacture FROM "boards"`)
 	CheckError(err)
+
+	var boards []board
 
 	defer rows.Close()
 
+	// checks each row of the sql query and creates a board struct and adds to an array
 	for rows.Next() {
-		var manufacture string
-		var uuid string
-		var date string
-		var mod sql.NullString
-		err = rows.Scan(&uuid, &manufacture, &date, &mod)
+		var b board
+
+		err = rows.Scan(&b.manufacture)
+		boards = append(boards, b)
 		CheckError(err)
 
-		fmt.Println(manufacture)
+		fmt.Println(boards)
 	}
 
 	CheckError(err)
@@ -52,6 +57,7 @@ func GetBoards() {
 	defer db.Close()
 }
 
+// Error handler to print out the error longs
 func CheckError(err error) {
 	if err != nil {
 		log.Println(err)
