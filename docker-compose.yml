@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+  skate-postgres:
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - ./create-db.sql:/docker-entrypoint-initdb.d/create-db.sql
+    ports:
+      - "8061:5432"
+
+  skate:
+    environment:
+      PORT: 8100
+    build:
+      context: .
+    ports:
+      - "8080:8100"
+    restart: always
