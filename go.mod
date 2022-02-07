@@ -1,4 +1,4 @@
-module v1
+module skate
 
 go 1.17
 

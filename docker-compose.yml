@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
     volumes:
-      - ./create-db.sql:/docker-entrypoint-initdb.d/create-db.sql
+      - ./scripts/create-db.sql:/docker-entrypoint-initdb.d/create-db.sql
     ports:
       - "8061:5432"
 
