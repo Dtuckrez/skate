@@ -10,12 +10,33 @@ services:
       - ./scripts/create-db.sql:/docker-entrypoint-initdb.d/create-db.sql
     ports:
       - "8061:5432"
+  
+  skate-rabbitmq:
+    image: rabbitmq:management
+    environment:
+      RABBITMQ_DEFAULT_USER: "admin"
+      RABBITMQ_DEFAULT_PASS: "password"
+    ports:
+      - "15672:15672"
+      - "5672:5672"
 
-  skate:
+  skate-api:
     environment:
       PORT: 8100
+      DB_URL: "postgres://postgres:password@skate-postgres:5432/skate?sslmode=disable"
+      QUEUE_URL: "amqp://admin:password@skate-rabbitmq:5672"
+      START_MODE: "api"
     build:
       context: .
     ports:
       - "8080:8100"
+    restart: always
+
+  skate-worker:
+    environment:
+      DB_URL: "postgres://postgres:password@skate-postgres:5432/skate?sslmode=disable"
+      QUEUE_URL: "amqp://admin:password@skate-rabbitmq:5672"
+      START_MODE: "worker"
+    build:
+      context: .
     restart: always

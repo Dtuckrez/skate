@@ -15,22 +15,26 @@ import (
 	"encoding/json"
 	"net/http"
 	"skate/internal/datastore"
+	"skate/internal/queue"
 	"strings"
 )
 
 type API struct {
 	routes    []Route
 	datastore datastore.BoardReader
+	queue     queue.Queue
 }
 
 // NewAPI represents the function to create a new API object for the supplied input.
-func NewAPI(datastore datastore.BoardReader) http.Handler {
+func NewAPI(datastore datastore.BoardReader, queue queue.Queue) http.Handler {
 	out := API{
 		datastore: datastore,
+		queue:     queue,
 	}
 
 	out.routes = []Route{
 		NewRoute(http.MethodGet, "/getBoards", out.getBoards()),
+		NewRoute(http.MethodPost, "/setBoard", out.setBoard()),
 	}
 
 	return out
@@ -63,6 +67,15 @@ func (i API) getBoards() http.HandlerFunc {
 		}
 		w.Write(buff)
 		// w.Write([]byte("Hello World"))
+	}
+}
+
+func (i API) setBoard() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if err := i.queue.Enqueue([]byte("QUEUE")); err != nil {
+			w.WriteHeader(http.StatusBadGateway)
+			return
+		}
 	}
 }
 
